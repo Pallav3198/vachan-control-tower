@@ -35,9 +35,9 @@
     const mk = o => { out.push(o); return o; };
     let n = 48213;
     // the three stories from the case come first
-    mk({ id: "VO-" + n++, customer: "OEM A", seg: 0, tier: "P", grade: "CRCA critical", t: 620, margin: 18000, origin: "jsr", dest: "pune", mode: "Road", created: -30, confirm: -24.3, produced: -12, dispatch: 2, eta: 58, promise: 40, lots: 2, cover: 2, penaltyCr: 3, sig: { gps: true, fastag: true, ewb: true, call: true } });
-    mk({ id: "VO-" + n++, customer: "Pipe Maker", seg: 1, tier: "S", grade: "HR tube grade", t: 1450, margin: 11000, origin: "kpo", dest: "bpl", mode: "Road", created: -120, confirm: -112, produced: -80, dispatch: -40, eta: 66, promise: 30, lots: 6, cover: 0, penaltyCr: 0, sig: { gps: false, fastag: true, ewb: true, call: true } });
-    mk({ id: "VO-" + n++, customer: "Retail North", seg: 2, tier: "F", grade: "GP coil", t: 1500, margin: 14000, origin: "jsr", dest: "ncr", mode: "Road", created: -40, confirm: -34, produced: 12, dispatch: 30, eta: 96, promise: 72, lots: 3, cover: 0, penaltyCr: 0, sig: { gps: true, fastag: true, ewb: true, call: true }, spc: "ncr" });
+    mk({ story: "line", id: "VO-" + n++, customer: "OEM A", seg: 0, tier: "P", grade: "CRCA critical", t: 620, margin: 18000, origin: "jsr", dest: "pune", mode: "Road", created: -30, confirm: -24.3, produced: -12, dispatch: 2, eta: 58, promise: 40, lots: 2, cover: 2, penaltyCr: 3, sig: { gps: true, fastag: true, ewb: true, call: true } });
+    mk({ story: "pipe", id: "VO-" + n++, customer: "Pipe Maker", seg: 1, tier: "S", grade: "HR tube grade", t: 1450, margin: 11000, origin: "kpo", dest: "bpl", mode: "Road", created: -120, confirm: -112, produced: -80, dispatch: -40, eta: 66, promise: 30, lots: 6, cover: 0, penaltyCr: 0, sig: { gps: false, fastag: true, ewb: true, call: true } });
+    mk({ story: "stock", id: "VO-" + n++, customer: "Retail North", seg: 2, tier: "F", grade: "GP coil", t: 1500, margin: 14000, origin: "jsr", dest: "ncr", mode: "Road", created: -40, confirm: -34, produced: 12, dispatch: 30, eta: 96, promise: 72, lots: 3, cover: 0, penaltyCr: 0, sig: { gps: true, fastag: true, ewb: true, call: true }, spc: "ncr" });
     for (let i = 0; i < 66; i++) {
       const c = pick(CUSTOMERS);
       const promise = Math.round(24 + R() * 210);
@@ -61,6 +61,13 @@
       mk({ id: "VO-" + n++, customer: c.name, seg: c.seg, tier: c.tier, grade: pick(c.grades), t: Math.round(60 + R() * 300), margin: c.margin, origin: pick(ORIGINS), dest: c.dest, mode: "Road", created: -Math.round(1 + R() * 6), confirm: null, produced: null, dispatch: null, eta: null, promise: promiseAsk, lots: 1, cover: 0, penaltyCr: 0, sig: { gps: true, fastag: true, ewb: true, call: true } });
     }
     return out;
+  }
+
+  // a fresh order that keeps the world moving while the demo runs
+  function spawn(id, clock, r) {
+    const pick = a => a[Math.floor(r() * a.length)], c = pick(CUSTOMERS);
+    const dispatch = clock + 1 + r() * 8, transit = Math.round(24 + r() * 50), eta = dispatch + transit, promise = eta + 10 + r() * 44;
+    return { id: "VO-" + id, customer: c.name, seg: c.seg, tier: c.tier, grade: pick(c.grades), t: Math.round(60 + r() * 400), margin: c.margin, origin: pick(ORIGINS), dest: c.dest, mode: r() < 0.3 ? "Rail" : "Road", created: clock - 6 - r() * 6, confirm: clock - 2 - r() * 3, produced: clock - 1, dispatch, eta, promise, lots: 1 + Math.floor(r() * 3), cover: c.seg === 0 ? +(6 + r() * 10).toFixed(1) : 0, penaltyCr: 0, sig: { gps: r() < 0.75, fastag: true, ewb: true, call: true } };
   }
 
   const LOTS = [
@@ -98,5 +105,5 @@
 
   const OTIF_HISTORY = [84.2, 84.9, 85.3, 86.1, 86.4, 87.2, 87.9, 88.3, 89.0, 89.6, 90.2];
 
-  root.VachanData = { SEGMENTS, OWNER, NODES, CUSTOMERS, orders, LOTS, DECISIONS, PILOTS, OTIF_HISTORY, HISTORY: { lines: 1000, onTime: 910 }, DAILY_KT: 20000 / 365, rng };
+  root.VachanData = { SEGMENTS, OWNER, NODES, CUSTOMERS, orders, LOTS, DECISIONS, PILOTS, OTIF_HISTORY, HISTORY: { lines: 150, onTime: 117 }, spawn, DAILY_KT: 20000 / 365, rng };
 })(window);
